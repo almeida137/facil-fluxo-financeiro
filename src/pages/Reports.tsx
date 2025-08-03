@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
+import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
+import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +11,7 @@ import { Download, TrendingUp, TrendingDown, PieChart, BarChart3 } from 'lucide-
 import { useTransactions } from '@/hooks/use-transactions';
 import { useCategories } from '@/hooks/use-categories';
 
-export default function Reports() {
+const Reports = () => {
   const { transactions, isLoading } = useTransactions();
   const { categories } = useCategories();
   const [selectedPeriod, setSelectedPeriod] = useState('current-month');
@@ -149,268 +151,277 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
-          <p className="text-muted-foreground">
-            Análise detalhada das suas finanças
-          </p>
-        </div>
-        <Button onClick={exportToCSV} className="gap-2">
-          <Download className="h-4 w-4" />
-          Exportar CSV
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-2">
-              <Label>Período</Label>
-              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="current-month">Mês Atual</SelectItem>
-                  <SelectItem value="last-month">Mês Anterior</SelectItem>
-                  <SelectItem value="custom">Personalizado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Categoria</Label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  {categories.map(category => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Tipo</Label>
-              <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="income">Receitas</SelectItem>
-                  <SelectItem value="expense">Despesas</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {selectedPeriod === 'custom' && (
-              <>
-                <div className="space-y-2">
-                  <Label>Data Inicial</Label>
-                  <Input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Data Final</Label>
-                  <Input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Receitas</CardTitle>
-            <TrendingUp className="h-4 w-4 text-success" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">
-              {formatCurrency(summaryData.totalIncome)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Despesas</CardTitle>
-            <TrendingDown className="h-4 w-4 text-danger" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-danger">
-              {formatCurrency(summaryData.totalExpenses)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Saldo</CardTitle>
-            <BarChart3 className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${
-              summaryData.balance >= 0 ? 'text-success' : 'text-danger'
-            }`}>
-              {formatCurrency(summaryData.balance)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Transações</CardTitle>
-            <PieChart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {summaryData.transactionCount}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Category Analysis */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Análise por Categoria</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {categoryData.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
-              Nenhuma transação encontrada para o período selecionado
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {categoryData.map((category, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: category.color }}
-                      />
-                      <span className="font-medium">{category.name}</span>
-                    </div>
-                    <div className="flex gap-4 text-sm">
-                      {category.income > 0 && (
-                        <span className="text-success">
-                          +{formatCurrency(category.income)}
-                        </span>
-                      )}
-                      {category.expense > 0 && (
-                        <span className="text-danger">
-                          -{formatCurrency(category.expense)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Progress bars */}
-                  {category.income > 0 && (
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div 
-                        className="h-2 rounded-full bg-success"
-                        style={{ 
-                          width: `${(category.income / summaryData.totalIncome) * 100}%`
-                        }}
-                      />
-                    </div>
-                  )}
-                  
-                  {category.expense > 0 && (
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div 
-                        className="h-2 rounded-full bg-danger"
-                        style={{ 
-                          width: `${(category.expense / summaryData.totalExpenses) * 100}%`
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Recent Transactions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Transações do Período</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredTransactions.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
-              Nenhuma transação encontrada
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {filteredTransactions.slice(0, 10).map((transaction) => {
-                const category = categories.find(c => c.id === transaction.category_id);
-                return (
-                  <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: category?.color || '#6366F1' }}
-                      />
-                      <div>
-                        <div className="font-medium">
-                          {transaction.description || 'Sem descrição'}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {category?.name || 'Sem categoria'} • {new Date(transaction.transaction_date).toLocaleDateString('pt-BR')}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={`font-medium ${
-                        transaction.type === 'income' ? 'text-success' : 'text-danger'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Number(transaction.amount))}
-                      </div>
-                      <Badge variant={transaction.type === 'income' ? 'default' : 'secondary'}>
-                        {transaction.type === 'income' ? 'Receita' : 'Despesa'}
-                      </Badge>
-                    </div>
-                  </div>
-                );
-              })}
-              
-              {filteredTransactions.length > 10 && (
-                <p className="text-sm text-muted-foreground text-center mt-4">
-                  Mostrando 10 de {filteredTransactions.length} transações
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto px-4 py-6">
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
+                <p className="text-muted-foreground">
+                  Análise detalhada das suas finanças
                 </p>
-              )}
+              </div>
+              <Button onClick={exportToCSV} className="gap-2">
+                <Download className="h-4 w-4" />
+                Exportar CSV
+              </Button>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+
+            {/* Filters */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Filtros</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <div className="space-y-2">
+                    <Label>Período</Label>
+                    <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="current-month">Mês Atual</SelectItem>
+                        <SelectItem value="last-month">Mês Anterior</SelectItem>
+                        <SelectItem value="custom">Personalizado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Categoria</Label>
+                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        {categories.map(category => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Tipo</Label>
+                    <Select value={selectedType} onValueChange={setSelectedType}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="income">Receitas</SelectItem>
+                        <SelectItem value="expense">Despesas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {selectedPeriod === 'custom' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label>Data Inicial</Label>
+                        <Input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Data Final</Label>
+                        <Input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Summary Cards */}
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total de Receitas</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-success" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-success">
+                    {formatCurrency(summaryData.totalIncome)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total de Despesas</CardTitle>
+                  <TrendingDown className="h-4 w-4 text-danger" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-danger">
+                    {formatCurrency(summaryData.totalExpenses)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Saldo</CardTitle>
+                  <BarChart3 className="h-4 w-4 text-primary" />
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold ${
+                    summaryData.balance >= 0 ? 'text-success' : 'text-danger'
+                  }`}>
+                    {formatCurrency(summaryData.balance)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Transações</CardTitle>
+                  <PieChart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {summaryData.transactionCount}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Category Analysis */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Análise por Categoria</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {categoryData.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">
+                    Nenhuma transação encontrada para o período selecionado
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {categoryData.map((category, index) => (
+                      <div key={index} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <span className="font-medium">{category.name}</span>
+                          </div>
+                          <div className="flex gap-4 text-sm">
+                            {category.income > 0 && (
+                              <span className="text-success">
+                                +{formatCurrency(category.income)}
+                              </span>
+                            )}
+                            {category.expense > 0 && (
+                              <span className="text-danger">
+                                -{formatCurrency(category.expense)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Progress bars */}
+                        {category.income > 0 && (
+                          <div className="w-full bg-secondary rounded-full h-2">
+                            <div 
+                              className="h-2 rounded-full bg-success"
+                              style={{ 
+                                width: `${(category.income / summaryData.totalIncome) * 100}%`
+                              }}
+                            />
+                          </div>
+                        )}
+                        
+                        {category.expense > 0 && (
+                          <div className="w-full bg-secondary rounded-full h-2">
+                            <div 
+                              className="h-2 rounded-full bg-danger"
+                              style={{ 
+                                width: `${(category.expense / summaryData.totalExpenses) * 100}%`
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Transactions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Transações do Período</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {filteredTransactions.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">
+                    Nenhuma transação encontrada
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {filteredTransactions.slice(0, 10).map((transaction) => {
+                      const category = categories.find(c => c.id === transaction.category_id);
+                      return (
+                        <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: category?.color || '#6366F1' }}
+                            />
+                            <div>
+                              <div className="font-medium">
+                                {transaction.description || 'Sem descrição'}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {category?.name || 'Sem categoria'} • {new Date(transaction.transaction_date).toLocaleDateString('pt-BR')}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className={`font-medium ${
+                              transaction.type === 'income' ? 'text-success' : 'text-danger'
+                            }`}>
+                              {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Number(transaction.amount))}
+                            </div>
+                            <Badge variant={transaction.type === 'income' ? 'default' : 'secondary'}>
+                              {transaction.type === 'income' ? 'Receita' : 'Despesa'}
+                            </Badge>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {filteredTransactions.length > 10 && (
+                      <p className="text-sm text-muted-foreground text-center mt-4">
+                        Mostrando 10 de {filteredTransactions.length} transações
+                      </p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    </ProtectedRoute>
   );
-}
+};
+
+export default Reports;

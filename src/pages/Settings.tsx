@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
+import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 
-export default function Settings() {
+const Settings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { categories, isLoading } = useCategories();
@@ -177,295 +179,304 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
-        <p className="text-muted-foreground">
-          Personalize sua experiência no ControleFácil
-        </p>
-      </div>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto px-4 py-6">
+          <div className="space-y-6">
+            {/* Header */}
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
+              <p className="text-muted-foreground">
+                Personalize sua experiência no ControleFácil
+              </p>
+            </div>
 
-      {/* Appearance Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
-            Aparência
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Tema</Label>
-            <Select value={theme} onValueChange={setTheme}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="light">
-                  <div className="flex items-center gap-2">
-                    <Sun className="h-4 w-4" />
-                    Claro
-                  </div>
-                </SelectItem>
-                <SelectItem value="dark">
-                  <div className="flex items-center gap-2">
-                    <Moon className="h-4 w-4" />
-                    Escuro
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+            {/* Appearance Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="h-5 w-5" />
+                  Aparência
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Tema</Label>
+                  <Select value={theme} onValueChange={setTheme}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">
+                        <div className="flex items-center gap-2">
+                          <Sun className="h-4 w-4" />
+                          Claro
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="dark">
+                        <div className="flex items-center gap-2">
+                          <Moon className="h-4 w-4" />
+                          Escuro
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Regional Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Configurações Regionais
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Moeda</Label>
-            <Select value={currency} onValueChange={setCurrency}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="BRL">Real Brasileiro (R$)</SelectItem>
-                <SelectItem value="USD">Dólar Americano ($)</SelectItem>
-                <SelectItem value="EUR">Euro (€)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            {/* Regional Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  Configurações Regionais
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Moeda</Label>
+                  <Select value={currency} onValueChange={setCurrency}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BRL">Real Brasileiro (R$)</SelectItem>
+                      <SelectItem value="USD">Dólar Americano ($)</SelectItem>
+                      <SelectItem value="EUR">Euro (€)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-          <Button onClick={updatePreferences}>
-            Salvar Preferências
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Categories Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Gerenciar Categorias
-            <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Nova Categoria
+                <Button onClick={updatePreferences}>
+                  Salvar Preferências
                 </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Adicionar Nova Categoria</DialogTitle>
-                </DialogHeader>
+              </CardContent>
+            </Card>
+
+            {/* Categories Management */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  Gerenciar Categorias
+                  <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm" className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Nova Categoria
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Adicionar Nova Categoria</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Nome</Label>
+                          <Input
+                            value={newCategory.name}
+                            onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                            placeholder="Nome da categoria"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Tipo</Label>
+                          <Select 
+                            value={newCategory.type} 
+                            onValueChange={(value: 'income' | 'expense') => 
+                              setNewCategory({ ...newCategory, type: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="income">Receita</SelectItem>
+                              <SelectItem value="expense">Despesa</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Cor</Label>
+                          <div className="grid grid-cols-8 gap-2">
+                            {predefinedColors.map((color) => (
+                              <button
+                                key={color}
+                                type="button"
+                                className={`w-8 h-8 rounded-full border-2 ${
+                                  newCategory.color === color ? 'border-primary' : 'border-transparent'
+                                }`}
+                                style={{ backgroundColor: color }}
+                                onClick={() => setNewCategory({ ...newCategory, color })}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button onClick={addCategory} className="flex-1">
+                            Adicionar
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setIsAddCategoryOpen(false)}
+                            className="flex-1"
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Nome</Label>
-                    <Input
-                      value={newCategory.name}
-                      onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                      placeholder="Nome da categoria"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Tipo</Label>
-                    <Select 
-                      value={newCategory.type} 
-                      onValueChange={(value: 'income' | 'expense') => 
-                        setNewCategory({ ...newCategory, type: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="income">Receita</SelectItem>
-                        <SelectItem value="expense">Despesa</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Cor</Label>
-                    <div className="grid grid-cols-8 gap-2">
-                      {predefinedColors.map((color) => (
-                        <button
-                          key={color}
-                          type="button"
-                          className={`w-8 h-8 rounded-full border-2 ${
-                            newCategory.color === color ? 'border-primary' : 'border-transparent'
-                          }`}
-                          style={{ backgroundColor: color }}
-                          onClick={() => setNewCategory({ ...newCategory, color })}
-                        />
+                  {/* Income Categories */}
+                  <div>
+                    <h3 className="font-medium mb-2">Categorias de Receita</h3>
+                    <div className="grid gap-2">
+                      {categories.filter(c => c.type === 'income').map((category) => (
+                        <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-4 h-4 rounded-full"
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <span>{category.name}</span>
+                            <Badge variant="outline">Receita</Badge>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEditCategory(category)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => deleteCategory(category.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button onClick={addCategory} className="flex-1">
-                      Adicionar
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setIsAddCategoryOpen(false)}
-                      className="flex-1"
-                    >
-                      Cancelar
-                    </Button>
+                  {/* Expense Categories */}
+                  <div>
+                    <h3 className="font-medium mb-2">Categorias de Despesa</h3>
+                    <div className="grid gap-2">
+                      {categories.filter(c => c.type === 'expense').map((category) => (
+                        <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-4 h-4 rounded-full"
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <span>{category.name}</span>
+                            <Badge variant="secondary">Despesa</Badge>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEditCategory(category)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => deleteCategory(category.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Income Categories */}
-            <div>
-              <h3 className="font-medium mb-2">Categorias de Receita</h3>
-              <div className="grid gap-2">
-                {categories.filter(c => c.type === 'income').map((category) => (
-                  <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: category.color }}
-                      />
-                      <span>{category.name}</span>
-                      <Badge variant="outline">Receita</Badge>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => startEditCategory(category)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => deleteCategory(category.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* Expense Categories */}
-            <div>
-              <h3 className="font-medium mb-2">Categorias de Despesa</h3>
-              <div className="grid gap-2">
-                {categories.filter(c => c.type === 'expense').map((category) => (
-                  <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: category.color }}
+            {/* Edit Category Dialog */}
+            {editingCategory && (
+              <Dialog open={!!editingCategory} onOpenChange={cancelEdit}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Editar Categoria</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Nome</Label>
+                      <Input
+                        value={newCategory.name}
+                        onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                        placeholder="Nome da categoria"
                       />
-                      <span>{category.name}</span>
-                      <Badge variant="secondary">Despesa</Badge>
                     </div>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => startEditCategory(category)}
+
+                    <div className="space-y-2">
+                      <Label>Tipo</Label>
+                      <Select 
+                        value={newCategory.type} 
+                        onValueChange={(value: 'income' | 'expense') => 
+                          setNewCategory({ ...newCategory, type: value })
+                        }
                       >
-                        <Edit className="h-4 w-4" />
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="income">Receita</SelectItem>
+                          <SelectItem value="expense">Despesa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Cor</Label>
+                      <div className="grid grid-cols-8 gap-2">
+                        {predefinedColors.map((color) => (
+                          <button
+                            key={color}
+                            type="button"
+                            className={`w-8 h-8 rounded-full border-2 ${
+                              newCategory.color === color ? 'border-primary' : 'border-transparent'
+                            }`}
+                            style={{ backgroundColor: color }}
+                            onClick={() => setNewCategory({ ...newCategory, color })}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button onClick={updateCategory} className="flex-1">
+                        Salvar
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => deleteCategory(category.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
+                      <Button variant="outline" onClick={cancelEdit} className="flex-1">
+                        Cancelar
                       </Button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Edit Category Dialog */}
-      {editingCategory && (
-        <Dialog open={!!editingCategory} onOpenChange={cancelEdit}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Editar Categoria</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nome</Label>
-                <Input
-                  value={newCategory.name}
-                  onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                  placeholder="Nome da categoria"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Tipo</Label>
-                <Select 
-                  value={newCategory.type} 
-                  onValueChange={(value: 'income' | 'expense') => 
-                    setNewCategory({ ...newCategory, type: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="income">Receita</SelectItem>
-                    <SelectItem value="expense">Despesa</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Cor</Label>
-                <div className="grid grid-cols-8 gap-2">
-                  {predefinedColors.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      className={`w-8 h-8 rounded-full border-2 ${
-                        newCategory.color === color ? 'border-primary' : 'border-transparent'
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => setNewCategory({ ...newCategory, color })}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button onClick={updateCategory} className="flex-1">
-                  Salvar
-                </Button>
-                <Button variant="outline" onClick={cancelEdit} className="flex-1">
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
+        </main>
+      </div>
+    </ProtectedRoute>
   );
-}
+};
+
+export default Settings;
