@@ -5,7 +5,7 @@ import { TransactionForm } from '@/components/transactions/TransactionForm';
 import { TransactionList } from '@/components/transactions/TransactionList';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { ResponsiveModal } from '@/components/ui/responsive-modal';
 
 const Expenses = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -21,20 +21,23 @@ const Expenses = () => {
                 <h1 className="text-3xl font-bold text-foreground">Despesas</h1>
                 <p className="text-muted-foreground">Gerencie suas despesas e gastos</p>
               </div>
-              <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogTrigger asChild>
+              <ResponsiveModal
+                open={isFormOpen}
+                onOpenChange={setIsFormOpen}
+                title="Nova Despesa"
+                description="Adicione uma nova despesa ao seu controle financeiro"
+                trigger={
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
                     Nova Despesa
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <TransactionForm 
-                    type="expense" 
-                    onSuccess={() => setIsFormOpen(false)}
-                  />
-                </DialogContent>
-              </Dialog>
+                }
+              >
+                <TransactionForm 
+                  type="expense" 
+                  onSuccess={() => setIsFormOpen(false)}
+                />
+              </ResponsiveModal>
             </div>
 
             <TransactionList type="expense" />

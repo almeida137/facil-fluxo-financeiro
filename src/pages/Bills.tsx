@@ -8,7 +8,7 @@ import { Plus, Calendar, DollarSign, Clock, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useTransactions } from '@/hooks/use-transactions';
 import { TransactionForm } from '@/components/transactions/TransactionForm';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ResponsiveModal } from '@/components/ui/responsive-modal';
 
 const Bills = () => {
   const { user } = useAuth();
@@ -87,20 +87,20 @@ const Bills = () => {
                   Gerencie suas contas fixas e variáveis
                 </p>
               </div>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
+              <ResponsiveModal
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                title="Cadastrar Nova Conta"
+                description="Adicione uma nova conta a pagar ou a receber"
+                trigger={
                   <Button className="gap-2">
                     <Plus className="h-4 w-4" />
                     Nova Conta
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Cadastrar Nova Conta</DialogTitle>
-                  </DialogHeader>
-                  <TransactionForm type="expense" onSuccess={() => setIsDialogOpen(false)} />
-                </DialogContent>
-              </Dialog>
+                }
+              >
+                <TransactionForm type="expense" onSuccess={() => setIsDialogOpen(false)} />
+              </ResponsiveModal>
             </div>
 
             {/* Summary Cards */}
