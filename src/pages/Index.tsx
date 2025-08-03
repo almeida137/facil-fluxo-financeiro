@@ -1,13 +1,17 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
+import { Navbar } from '@/components/layout/Navbar';
+import Dashboard from './Dashboard';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto px-4 py-6">
+          <Dashboard />
+        </main>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 };
 
