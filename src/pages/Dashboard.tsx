@@ -32,7 +32,9 @@ export default function Dashboard() {
 
   const fetchFinancialData = async () => {
     try {
-      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+      const now = new Date();
+      const currentMonth = now.toISOString().slice(0, 7); // YYYY-MM
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString().slice(0, 10);
 
       // Fetch current month income
       const { data: incomeData, error: incomeError } = await supabase
@@ -42,7 +44,7 @@ export default function Dashboard() {
         .eq('type', 'income')
         .eq('is_paid', true)
         .gte('transaction_date', `${currentMonth}-01`)
-        .lt('transaction_date', `${currentMonth}-32`);
+        .lt('transaction_date', nextMonth);
 
       if (incomeError) throw incomeError;
 
@@ -54,7 +56,7 @@ export default function Dashboard() {
         .eq('type', 'expense')
         .eq('is_paid', true)
         .gte('transaction_date', `${currentMonth}-01`)
-        .lt('transaction_date', `${currentMonth}-32`);
+        .lt('transaction_date', nextMonth);
 
       if (expenseError) throw expenseError;
 
