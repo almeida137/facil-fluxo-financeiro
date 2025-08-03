@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/use-auth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import UpdatePassword from "./pages/UpdatePassword";
 import Income from "./pages/Income";
 import Expenses from "./pages/Expenses";
 import NotFound from "./pages/NotFound";
@@ -22,6 +23,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/update-password" element={<UpdatePassword />} />
             <Route path="/income" element={<Income />} />
             <Route path="/expenses" element={<Expenses />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
