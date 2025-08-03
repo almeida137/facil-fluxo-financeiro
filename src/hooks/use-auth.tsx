@@ -82,24 +82,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
+      console.log('Tentando fazer login com:', { email });
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
         password,
       });
 
+      console.log('Resultado do login:', { data, error });
+
       if (error) {
+        console.error('Erro detalhado do login:', error);
+        
+        let errorMessage = error.message;
+        
+        // Melhorar mensagens de erro para o usuário
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = "Email ou senha incorretos. Verifique suas credenciais ou use 'Esqueci minha senha'.";
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = "Email não confirmado. Verifique sua caixa de entrada.";
+        }
+        
         toast({
           title: "Erro no login",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
+        });
+      } else {
+        console.log('Login realizado com sucesso:', data.user?.email);
+        toast({
+          title: "Login realizado!",
+          description: "Bem-vindo de volta.",
         });
       }
 
       return { error };
     } catch (error: any) {
+      console.error('Erro inesperado no login:', error);
       toast({
         title: "Erro no login",
-        description: "Ocorreu um erro inesperado.",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
         variant: "destructive",
       });
       return { error };
