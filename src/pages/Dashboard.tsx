@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, TrendingUp, TrendingDown, DollarSign, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
@@ -10,7 +11,8 @@ interface FinancialData {
   totalIncome: number;
   totalExpenses: number;
   balance: number;
-  upcomingBills: number;
+  upcomingBillsAmount: number;
+  upcomingBillsCount: number;
 }
 
 export default function Dashboard() {
@@ -20,69 +22,78 @@ export default function Dashboard() {
     totalIncome: 0,
     totalExpenses: 0,
     balance: 0,
-    upcomingBills: 0,
+    upcomingBillsAmount: 0,
+    upcomingBillsCount: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
 
   useEffect(() => {
     if (user) {
       fetchFinancialData();
     }
-  }, [user]);
+  }, [user, selectedPeriod]);
 
   const fetchFinancialData = async () => {
     try {
-      const now = new Date();
-      const currentMonth = now.toISOString().slice(0, 7); // YYYY-MM
-      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString().slice(0, 10);
+      const [year, month] = selectedPeriod.split('-');
+      const startDate = `${year}-${month}-01`;
+      const endDate = new Date(parseInt(year), parseInt(month), 1).toISOString().slice(0, 10);
 
-      // Fetch current month income
+      // Fetch selected period income
       const { data: incomeData, error: incomeError } = await supabase
         .from('transactions')
         .select('amount')
         .eq('user_id', user?.id)
         .eq('type', 'income')
         .eq('is_paid', true)
-        .gte('transaction_date', `${currentMonth}-01`)
-        .lt('transaction_date', nextMonth);
+        .gte('transaction_date', startDate)
+        .lt('transaction_date', endDate);
 
       if (incomeError) throw incomeError;
 
-      // Fetch current month expenses
+      // Fetch selected period expenses
       const { data: expenseData, error: expenseError } = await supabase
         .from('transactions')
         .select('amount')
         .eq('user_id', user?.id)
         .eq('type', 'expense')
         .eq('is_paid', true)
-        .gte('transaction_date', `${currentMonth}-01`)
-        .lt('transaction_date', nextMonth);
+        .gte('transaction_date', startDate)
+        .lt('transaction_date', endDate);
 
       if (expenseError) throw expenseError;
 
-      // Fetch upcoming bills (next 7 days)
-      const nextWeek = new Date();
-      nextWeek.setDate(nextWeek.getDate() + 7);
+      // Fetch upcoming bills - sum of unpaid expenses with due_date OR transaction_date in current month
+      const now = new Date();
+      const currentMonth = now.toISOString().slice(0, 7); // YYYY-MM
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString().slice(0, 10);
       
       const { data: billsData, error: billsError } = await supabase
         .from('transactions')
-        .select('amount')
+        .select('amount, due_date, transaction_date')
         .eq('user_id', user?.id)
+        .eq('type', 'expense')
         .eq('is_paid', false)
-        .gte('due_date', new Date().toISOString().slice(0, 10))
-        .lte('due_date', nextWeek.toISOString().slice(0, 10));
+        .or(`due_date.gte.${currentMonth}-01,and(due_date.is.null,transaction_date.gte.${currentMonth}-01)`)
+        .or(`due_date.lt.${nextMonth},and(due_date.is.null,transaction_date.lt.${nextMonth})`);
 
       if (billsError) throw billsError;
 
       const totalIncome = incomeData?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
       const totalExpenses = expenseData?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
-      const upcomingBills = billsData?.length || 0;
+      const upcomingBillsAmount = billsData?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
+      const upcomingBillsCount = billsData?.length || 0;
 
       setData({
         totalIncome,
         totalExpenses,
         balance: totalIncome - totalExpenses,
-        upcomingBills,
+        upcomingBillsAmount,
+        upcomingBillsCount,
       });
     } catch (error: any) {
       toast({
@@ -113,14 +124,32 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
             Visão geral das suas finanças pessoais
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Selecionar período" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 12 }, (_, i) => {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const label = date.toLocaleDateString('pt-BR', { year: 'numeric', month: 'long' });
+                return (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
           <Button size="sm" className="gap-2">
             <Plus className="h-4 w-4" />
             Nova Transação
@@ -184,10 +213,10 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-warning">
-              {data.upcomingBills}
+              {formatCurrency(data.upcomingBillsAmount)}
             </div>
             <p className="text-xs text-muted-foreground">
-              Próximos 7 dias
+              {data.upcomingBillsCount} conta{data.upcomingBillsCount !== 1 ? 's' : ''} pendente{data.upcomingBillsCount !== 1 ? 's' : ''}
             </p>
           </CardContent>
         </Card>
