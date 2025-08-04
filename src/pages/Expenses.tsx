@@ -17,6 +17,13 @@ const Expenses = () => {
     setIsFormOpen(true);
   };
 
+  const handleOpenChange = (open: boolean) => {
+    setIsFormOpen(open);
+    if (!open) {
+      setEditingTransaction(undefined);
+    }
+  };
+
   const handleFormClose = () => {
     setIsFormOpen(false);
     setEditingTransaction(undefined);
@@ -35,7 +42,7 @@ const Expenses = () => {
               </div>
               <ResponsiveModal
                 open={isFormOpen}
-                onOpenChange={handleFormClose}
+                onOpenChange={handleOpenChange}
                 title={editingTransaction ? "Editar Despesa" : "Nova Despesa"}
                 description={editingTransaction ? "Edite os dados da despesa" : "Adicione uma nova despesa ao seu controle financeiro"}
                 trigger={

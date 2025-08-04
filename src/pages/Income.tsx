@@ -17,6 +17,13 @@ const Income = () => {
     setIsFormOpen(true);
   };
 
+  const handleOpenChange = (open: boolean) => {
+    setIsFormOpen(open);
+    if (!open) {
+      setEditingTransaction(undefined);
+    }
+  };
+
   const handleFormClose = () => {
     setIsFormOpen(false);
     setEditingTransaction(undefined);
@@ -35,7 +42,7 @@ const Income = () => {
               </div>
               <ResponsiveModal
                 open={isFormOpen}
-                onOpenChange={handleFormClose}
+                onOpenChange={handleOpenChange}
                 title={editingTransaction ? "Editar Receita" : "Nova Receita"}
                 description={editingTransaction ? "Edite os dados da receita" : "Adicione uma nova receita ao seu controle financeiro"}
                 trigger={
