@@ -6,9 +6,21 @@ import { TransactionList } from '@/components/transactions/TransactionList';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { ResponsiveModal } from '@/components/ui/responsive-modal';
+import { Transaction } from '@/hooks/use-transactions';
 
 const Income = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setIsFormOpen(true);
+  };
+
+  const handleFormClose = () => {
+    setIsFormOpen(false);
+    setEditingTransaction(undefined);
+  };
 
   return (
     <ProtectedRoute>
@@ -23,9 +35,9 @@ const Income = () => {
               </div>
               <ResponsiveModal
                 open={isFormOpen}
-                onOpenChange={setIsFormOpen}
-                title="Nova Receita"
-                description="Adicione uma nova receita ao seu controle financeiro"
+                onOpenChange={handleFormClose}
+                title={editingTransaction ? "Editar Receita" : "Nova Receita"}
+                description={editingTransaction ? "Edite os dados da receita" : "Adicione uma nova receita ao seu controle financeiro"}
                 trigger={
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
@@ -35,12 +47,13 @@ const Income = () => {
               >
                 <TransactionForm 
                   type="income" 
-                  onSuccess={() => setIsFormOpen(false)}
+                  editTransaction={editingTransaction}
+                  onSuccess={handleFormClose}
                 />
               </ResponsiveModal>
             </div>
 
-            <TransactionList type="income" />
+            <TransactionList type="income" onEdit={handleEdit} />
           </div>
         </main>
       </div>
